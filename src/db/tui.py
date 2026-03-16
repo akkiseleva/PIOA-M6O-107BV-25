@@ -1,113 +1,78 @@
-from .backend.memory import create_record, select_record, update_record, delete_record
-def _print_menu() -> None:
-    print("\n=== База студентов ===")
-    print("1. Добавить запись")
-    print("2. Показать все записи")
-    print("3. Показать записи по фильтру")
-    print("4. Обновить запись")
-    print("5. Удалить запись")
-    print("0. Выход")
+from .backend.memory import *
 
-def _read_int(prompt: str) -> int:
+def run():
+    current = None
     while True:
-        raw = input(prompt).strip()
-        try:
-            return int(raw)
-        except ValueError:
-            print("Ошибка: введите целое число.")
-
-def _add_student() -> None:
-    print("\nДобавление записи")
-    student_id = _read_int("id: ")
-    first_name = input("first_name: ").strip()
-    second_name = input("second_name: ").strip()
-    age = _read_int("age: ")
-    sex = input("sex: ").strip()
-    try:
-        record = create_record(student_id, first_name, second_name, age, sex)
-        print(f"Запись добавлена: {record}")
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
-
-def _print_records(records: list[tuple[int, str, str, int, str]]) -> None:
-    if not records:
-        print("Записи не найдены.")
-        return
-    for record in records:
-        print(record)
-
-def _show_all_students() -> None:
-    print("\nСписок записей")
-    _print_records(select_record())
-
-def _read_optional_int(prompt: str) -> int | None:
-    while True:
-        raw = input(prompt).strip()
-        if raw == "":
-            return None
-        try:
-            return int(raw)
-        except ValueError:
-            print("Ошибка: введите целое число или оставьте поле пустым.")
-
-def _find_students_by_filter() -> None:
-    print("\nПоиск по фильтру (Enter = пропустить поле)")
-    student_id = _read_optional_int("id: ")
-    first_name = input("first_name: ").strip() or None
-    second_name = input("second_name: ").strip() or None
-    age = _read_optional_int("age: ")
-    sex = input("sex: ").strip() or None
-    records = select_record(
-        student_id=student_id,
-        first_name=first_name,
-        second_name=second_name,
-        age=age,
-        sex=sex,
-    )
-    _print_records(records)
-
-def _update_student() -> None:
-    try:
-        student_id = _read_int("id: ")
-        first_name = input("first_name: ").strip() or None
-        second_name = input("second_name: ").strip() or None
-        age = _read_optional_int("age: ")
-        sex = input("sex: ").strip() or None
-        updated = update_record(student_id, first_name, second_name, age, sex)
-        print(updated)
-    except ValueError as exc:
-        print(exc)
-    except Exception as exc:
-        print(exc)
-
-def _delete_student() -> None:
-    try:
-        student_id = _read_int()
-        delete_record(student_id)
-    except ValueError as exc:
-        print(f"Ошибка: {exc}")
-
-def run() -> None:
-    while True:
-        _print_menu()
-        action = input("Выберите действие: ").strip()
-        if action == "1":
-            _add_student()
-        elif action == "2":
-            _show_all_students()
-        elif action == "3":
-            _find_students_by_filter()
-        elif action == "4":
-            _update_student()
-        elif action == "5":
-            _delete_student()
-        elif action == "0":
+        if not current:
+            tables = get_tables()
+            if not tables:
+                cmd = input("1 - создать, 0 - выход: ")
+                if cmd == "1":
+                    name = input("Имя: ")
+                    cols = input("Колонки: ").replace(" ", "").split(",")
+                    new_table(name, cols)
+                    current = name
+                elif cmd == "0":
+                    break
+            else:
+                for i, t in enumerate(tables):
+                    print(f"{i + 1}. {t}")
+                print("0. Назад")
+                cmd = input("> ")
+                if cmd.isdigit() and 0 < int(cmd) <= len(tables):
+                    current = tables[int(cmd) - 1]
+            continue
+        print("1. Добавить запись")
+        print("2. Показать все записи")
+        print("3. Показать записи по фильтру")
+        print("4. Обновить запись")
+        print("5. Удалить запись")
+        print("6. Сменить таблицу")
+        print("0. Выход")
+        cmd = input("> ")
+        if cmd == "1":
+            row = []
+            for c in base[current]["cl"]:
+                if c == "id":
+                    row.append(int(input(f"{c}: ")))
+                else:
+                    row.append(input(f"{c}: "))
+            add_rows(current, tuple(row))
+        elif cmd == "2":
+            for r in get_rows(current):
+                print(r)
+        elif cmd == "3":
+            s = {}
+            for c in base[current]["cl"]:
+                v = input(f"{c}: ")
+                if v:
+                    if c == "id":
+                        s[c] = int(v)
+                    else:
+                        s[c] = v
+            for r in find_rows(current, s):
+                print(r)
+        elif cmd == "4":
+            rid = int(input("ID: "))
+            new = {}
+            for c in base[current]["cl"][1:]:
+                v = input(f"{c}: ")
+                if v:
+                    if c in ["age", "год"]:
+                        new[c] = int(v)
+                    else:
+                        new[c] = v
+            if update_row(current, rid, new):
+                print("Обновлено")
+            else:
+                print("Ошибка")
+        elif cmd == "5":
+            rid = int(input("ID: "))
+            if delete_row(current, rid):
+                print("Удалено")
+            else:
+                print("Ошибка")
+        elif cmd == "6":
+            current = None
+        elif cmd == "0":
             break
-        else:
-            print("Ошибка")
-
-
-
-
-
-
