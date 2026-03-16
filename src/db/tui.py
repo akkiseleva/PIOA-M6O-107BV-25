@@ -66,6 +66,27 @@ def _find_students_by_filter() -> None:
     )
     _print_records(records)
 
+def _update_student() -> None:
+    try:
+        student_id = _read_int("id: ")
+        first_name = input("first_name: ").strip() or None
+        second_name = input("second_name: ").strip() or None
+        age = _read_optional_int("age: ")
+        sex = input("sex: ").strip() or None
+        updated = update_record(student_id, first_name, second_name, age, sex)
+        print(updated)
+    except ValueError as exc:
+        print(exc)
+    except Exception as exc:
+        print(exc)
+
+def _delete_student() -> None:
+    try:
+        student_id = _read_int()
+        delete_record(student_id)
+    except ValueError as exc:
+        print(f"Ошибка: {exc}")
+
 def run() -> None:
     while True:
         _print_menu()
@@ -76,11 +97,16 @@ def run() -> None:
             _show_all_students()
         elif action == "3":
             _find_students_by_filter()
+        elif action == "4":
+            _update_student()
+        elif action == "5":
+            _delete_student()
         elif action == "0":
-            print("Выход из программы.")
             break
         else:
-            print("Неизвестная команда. Повторите ввод.")
+            print("Ошибка")
+
+
 
 
 
