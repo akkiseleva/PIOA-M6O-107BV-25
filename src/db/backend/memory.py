@@ -1,49 +1,56 @@
-base = {}
-def new_table(name, columns):
-    base[name] = {"cl": columns, "rows": []}
+tables = {}
+
+def create_table(name, fields):
+    tables[name] = (fields, [])
 
 def get_tables():
-    return list(base.keys())
+    return list(tables.keys())
 
-def add_rows(table, row):
-    base[table]["rows"].append(row)
+def get_fields(table):
+    return tables[table][0]
 
-def get_rows(table):
-    return base[table]["rows"]
+def add_record(table, record):
+    tables[table][1].append(record)
+    return record
 
-def find_rows(table, search):
+def get_all(table):
+    return tables[table][1].copy()
+
+def find_records(table, filters):
+    fields = tables[table][0]
     result = []
-    cols = base[table]["cl"]
-    for row in base[table]["rows"]:
-        ok = True
-        for key, val in search.items():
-            if row[cols.index(key)] != val:
-                ok = False
+    for rec in tables[table][1]:
+        match = True
+        for key, val in filters.items():
+            if key not in fields:
+                match = False
                 break
-        if ok:
-            result.append(row)
+            idx = fields.index(key)
+            if rec[idx] != val:
+                match = False
+                break
+        if match:
+            result.append(rec)
     return result
 
-def update_row(table, row_id, new):
-    cols = base[table]["cl"]
-    for i, row in enumerate(base[table]["rows"]):
-        if row[0] == row_id:
-            new_row = list(row)
-            for key, val in new.items():
-                new_row[cols.index(key)] = val
-            base[table]["rows"][i] = tuple(new_row)
+def update_record(table, rec_id, new_data):
+    fields = tables[table][0]
+    for i, rec in enumerate(tables[table][1]):
+        if rec[0] == rec_id:
+            new = list(rec)
+            for key, val in new_data.items():
+                if key in fields:
+                    new[fields.index(key)] = val
+            tables[table][1][i] = tuple(new)
             return True
     return False
 
-def delete_row(table, row_id):
-    for i, row in enumerate(base[table]["rows"]):
-        if row[0] == row_id:
-            base[table]["rows"].pop(i)
+def delete_record(table, rec_id):
+    for i, rec in enumerate(tables[table][1]):
+        if rec[0] == rec_id:
+            tables[table][1].pop(i)
             return True
     return False
 
-
-
-
-
-
+def table_exists(name):
+    return name in tables
