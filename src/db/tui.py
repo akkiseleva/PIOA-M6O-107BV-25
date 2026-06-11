@@ -43,7 +43,11 @@ def find_dialog():
         val = input(f"{f} (Enter - пропустить): ")
         if val:
             if f == "id":
-                val = int(val)
+                try:
+                    val = int(val)
+                except ValueError:
+                    print("Ошибка: ID должен быть числом. Фильтр по ID пропущен.")
+                    continue
             filters[f] = val
     results = find_records(current, filters)
     if results:
@@ -53,26 +57,44 @@ def find_dialog():
         print("Не найдено")
 
 def update_dialog():
-    rid = int(input("ID записи: "))
+    try:
+        rid = int(input("ID записи: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом")
+        return
     fields = get_fields(current)
     new = {}
     for f in fields[1:]:
         val = input(f"Новый {f} (Enter - без изменений): ")
         if val:
             if "возраст" in f or "лет" in f:
-                val = int(val)
+                try:
+                    val = int(val)
+                except ValueError:
+                    print(f"Ошибка: поле '{f}' должно быть числом")
+                    return
             new[f] = val
-    if update_record(current, rid, new):
-        print("Обновлено")
-    else:
-        print("ID не найден")
+    try:
+        if update_record(current, rid, new):
+            print("Обновлено")
+        else:
+            print("ID не найден")
+    except ValueError as e:
+        print(f"Ошибка: {e}")
 
 def delete_dialog():
-    rid = int(input("ID записи: "))
-    if delete_record(current, rid):
-        print("Удалено")
-    else:
-        print("ID не найден")
+    try:
+        rid = int(input("ID записи: "))
+    except ValueError:
+        print("Ошибка: ID должен быть числом")
+        return
+    try:
+        if delete_record(current, rid):
+            print("Удалено")
+        else:
+            print("ID не найден")
+    except ValueError as e:
+        print(f"Ошибка: {e}")
 
 def select_table():
     global current
@@ -91,12 +113,27 @@ def select_table():
 
 def create_table_dialog():
     global current
-    name = input("Имя таблицы: ")
-    fields = input("Поля через запятую (первое - id): ").split(",")
-    fields = [f.strip() for f in fields]
-    create_table(name, fields)
-    current = name
-    print(f"Таблица '{name}' создана")
+    name = input("Имя таблицы: ").strip()
+    if not name:
+        print("Ошибка: имя таблицы не может быть пустым")
+        return
+    fields_input = input("Поля через запятую (первое - id): ").strip()
+    if not fields_input:
+        print("Ошибка: нужно указать хотя бы одно поле")
+        return
+    fields = [f.strip() for f in fields_input.split(",")]
+    if not fields:
+        print("Ошибка: список полей пуст")
+        return
+    if fields[0] != "id":
+        print("Ошибка: первое поле должно называться 'id'")
+        return
+    try:
+        create_table(name, fields)
+        current = name
+        print(f"Таблица '{name}' создана")
+    except ValueError as e:
+        print(f"Ошибка: {e}")
 
 def run():
     global current

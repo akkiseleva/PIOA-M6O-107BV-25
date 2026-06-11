@@ -1,15 +1,27 @@
 tables = {}
 
 def create_table(name, fields):
+    if name in tables:
+        raise ValueError(f"Таблица '{name}' уже существует")
+    if not fields:
+        raise ValueError("Таблица должна содержать хотя бы одно поле")
     tables[name] = (fields, [])
 
 def get_tables():
     return list(tables.keys())
 
 def get_fields(table):
+    if table not in tables:
+        raise ValueError(f"Таблица '{table}' не существует")
     return tables[table][0]
 
+
 def add_record(table, record):
+    if table not in tables:
+        raise ValueError(f"Таблица '{table}' не существует")
+    fields = tables[table][0]
+    if len(record) != len(fields):
+        raise ValueError(f"Ожидается {len(fields)} полей, получено {len(record)}")
     tables[table][1].append(record)
     return record
 
@@ -34,13 +46,21 @@ def find_records(table, filters):
     return result
 
 def update_record(table, rec_id, new_data):
+    if table not in tables:
+        raise ValueError(f"Таблица '{table}' не существует")
+
     fields = tables[table][0]
+
+    # Проверяем, что все ключи из new_data существуют в таблице
+    for key in new_data:
+        if key not in fields:
+            raise ValueError(f"Поле '{key}' не существует в таблице '{table}'. Доступные поля: {fields}")
+
     for i, rec in enumerate(tables[table][1]):
         if rec[0] == rec_id:
             new = list(rec)
             for key, val in new_data.items():
-                if key in fields:
-                    new[fields.index(key)] = val
+                new[fields.index(key)] = val
             tables[table][1][i] = tuple(new)
             return True
     return False
