@@ -1,76 +1,39 @@
-tables = {}
-
-def create_table(name, fields):
-    if name in tables:
-        raise ValueError(f"Таблица '{name}' уже существует")
-    if not fields:
-        raise ValueError("Таблица должна содержать хотя бы одно поле")
-    tables[name] = (fields, [])
-
-def get_tables():
-    return list(tables.keys())
-
-def get_fields(table):
-    if table not in tables:
-        raise ValueError(f"Таблица '{table}' не существует")
-    return tables[table][0]
+from .database import DBManager
+from .errors import TableNotFoundError
+from .table import DataTable
 
 
-def add_record(table, record):
-    if table not in tables:
-        raise ValueError(f"Таблица '{table}' не существует")
-    fields = tables[table][0]
-    if len(record) != len(fields):
-        raise ValueError(f"Ожидается {len(fields)} полей, получено {len(record)}")
-    tables[table][1].append(record)
-    return record
+class MemoryDatabase(DBManager):
+    def __init__(self):
+        self._tables: dict[str, DataTable] = {}
 
-def get_all(table):
-    return tables[table][1].copy()
+    def _table_exists(self, table_name: str) -> bool:
+        return table_name in self._tables
 
-def find_records(table, filters):
-    fields = tables[table][0]
-    result = []
-    for rec in tables[table][1]:
-        match = True
-        for key, val in filters.items():
-            if key not in fields:
-                match = False
-                break
-            idx = fields.index(key)
-            if rec[idx] != val:
-                match = False
-                break
-        if match:
-            result.append(rec)
-    return result
+    def _list_tables(self) -> list[str]:
+        return list(self._tables.keys())
 
-def update_record(table, rec_id, new_data):
-    if table not in tables:
-        raise ValueError(f"Таблица '{table}' не существует")
+    def _load_table(self, table_name: str) -> DataTable:
+        if table_name not in self._tables:
+            raise TableNotFoundError(f"Таблица '{table_name}' не найдена")
+        return self._tables[table_name]
 
-    fields = tables[table][0]
+    def _save_table(self, table_name: str, table: DataTable) -> None:
+        self._tables[table_name] = table
 
-    # Проверяем, что все ключи из new_data существуют в таблице
-    for key in new_data:
-        if key not in fields:
-            raise ValueError(f"Поле '{key}' не существует в таблице '{table}'. Доступные поля: {fields}")
+    def _rename_table(self, old: str, new: str) -> None:
+        self._tables[new] = self._tables.pop(old)
 
-    for i, rec in enumerate(tables[table][1]):
-        if rec[0] == rec_id:
-            new = list(rec)
-            for key, val in new_data.items():
-                new[fields.index(key)] = val
-            tables[table][1][i] = tuple(new)
-            return True
-    return False
+    def _delete_table(self, table_name: str) -> None:
+        del self._tables[table_name]
 
-def delete_record(table, rec_id):
-    for i, rec in enumerate(tables[table][1]):
-        if rec[0] == rec_id:
-            tables[table][1].pop(i)
-            return True
-    return False
+    # Добавленные методы для совместимости с тестами
+    def get_all_info(self) -> dict[str, tuple[list[str], int]]:
+        result = {}
+        for name, table in self._tables.items():
+            result[name] = (list(table.columns), len(table.records))
+        return result
 
-def table_exists(name):
-    return name in tables
+    def get_columns(self, table_name: str) -> list[str]:
+        table = self._load_table(table_name)
+        return list(table.columns)
