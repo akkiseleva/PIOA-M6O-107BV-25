@@ -1,93 +1,158 @@
-# PIOA M6O-107BV-25
+Киселева Анна Константиновна
+М60-107БВ-25
+Python
+
+Структура проекта:
+
+pioa-m60-107bv-25/
+│
+├── src/
+│   └── db/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── tui.py
+│       └── backend/
+│           ├── __init__.py
+│           ├── errors.py
+│           └── memory.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_memory.py
+│   └── test_tui.py
+└── README.md
 
 
+## Классы
 
-## Getting started
+### DataTable (в memory.py)
+Представляет отдельную таблицу с произвольными колонками.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+Атрибуты:
+- name - имя таблицы
+- columns - список названий колонок
+- records - список записей
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+Методы:
+- add_record() - добавление записи
+- get_records() - получение записей с фильтрацией
+- update_records() - обновление записей по фильтру
+- delete_records() - удаление записей по фильтру
+- clear() - очистка всех записей
+- rename_column() - переименование колонки
+- sort_records() - сортировка записей по колонке
+- get_record_by_index(), delete_record_by_index(), update_record_by_index() - работа по индексам
 
-## Add your files
+### DBManager (в memory.py)
+Управляет коллекцией таблиц.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+Методы:
+- create_table() - создание таблицы
+- list_tables() - список таблиц
+- get_table() - получение таблицы по имени
+- delete_table() - удаление таблицы
+- rename_table() - переименование таблицы
+- table_exists() - проверка существования
+- get_all_info() - информация о всех таблицах
+- sort_records() - сортировка записей в таблице
+- CRUD-операции через таблицы
 
-```
-cd existing_repo
-git remote add origin https://gitlab.mai.ru/AKKiseleva/pioa-m6o-107bv-25.git
-git branch -M main
-git push -uf origin main
-```
+### ConsoleUI (в tui.py)
+Текстовый пользовательский интерфейс.
 
-## Integrate with your tools
+Атрибуты:
+- _current_table - текущая выбранная таблица
 
-- [ ] [Set up project integrations](https://gitlab.mai.ru/AKKiseleva/pioa-m6o-107bv-25/-/settings/integrations)
+Методы:
+- run() - главный цикл программы
+- _print_menu() - отображение меню
+- _sort_records() - сортировка записей
+- Все методы для работы с пользователем (_create_table, _add_record, и т.д.)
 
-## Collaborate with your team
+## Исключения (errors.py)
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+- TableError - базовый класс
+- TableNotFoundError - таблица не найдена
+- ColumnNotFoundError - колонка не найдена
+- DuplicateTableError - дубликат таблицы
+- EmptyTableNameError - пустое имя таблицы
+- EmptyColumnsError - нет колонок
+- InvalidRecordLengthError - неверная длина записи
+- RecordNotFoundError - запись не найдена по индексу
 
-## Test and Deploy
+## Функциональность
 
-Use the built-in continuous integration in GitLab.
+### Управление таблицами
+- Создание таблиц - пользователь задаёт имя и список колонок
+- Просмотр всех таблиц с количеством записей и колонок
+- Информация о текущей таблице
+- Выбор текущей таблицы
+- Переименование таблиц
+- Удаление таблиц
+- Переименование колонок
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Работа с записями (CRUD)
+- Добавление записей с проверкой количества полей
+- Просмотр всех записей
+- Поиск по фильтру (формат колонка=значение)
+- Сортировка записей по любой колонке (возрастание/убывание)
+- Обновление записей с выбором конкретных записей
+- Удаление записей: по фильтру или очистка всей таблицы
 
-***
 
-# Editing this README
+### Использование программы:
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+При запуске программы появляется главное меню (управление таблицами):
 
-## Suggestions for a good README
+=== Управление базами данных ===
+1. Создать таблицу
+2. Выбрать таблицу
+3. Список таблиц
+4. Информация о таблице
+5. Добавить запись
+6. Все записи
+7. Поиск
+8. Обновить записи
+9. Удалить записи:
+   9.1. По фильтру
+   9.2. Очистить таблицу
+10. Удалить таблицу
+11. Переименовать таблицу
+12. Переименовать колонку
+13. Сортировка
+0. Выход
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+### Как запустить:
 
-## Name
-Choose a self-explaining name for your project.
+1. Откройте терминал (командную строку)
+2. Перейдите в корневую папку проекта
+3. Выполните команду:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+   python -m src.db
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+### Запуск тестов
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Все тесты:
+python -m unittest discover tests -v
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+Только тесты БД:
+python -m unittest tests.test_memory -v
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Только тесты интерфейса:
+python -m unittest tests.test_tui -v
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Покрытие кода
+python -m pytest --cov=src --cov-report=term-missing
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+## Покрытие тестами
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Name                         Stmts   Miss  Cover   Missing
+----------------------------------------------------------
+src\db\__init__.py               0      0   100%
+src\db\__main__.py               3      3     0%   1-4
+src\db\backend\__init__.py       0      0   100%
+src\db\backend\errors.py        18      0   100%
+src\db\backend\memory.py       190     26    86%   92, 137, 172, 200, 203-214, 220, 223-231
+src\db\tui.py                  439     83    81%   21, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49, 51, 53, 90-91, 129-130, 164-165, 172-173, 185-186, 193-194, 221-222, 243-244, 259, 265-266, 270-293, 297-298, 324-325, 327-328, 332-333, 340, 349-351, 360-364, 368-369, 420-421, 463-465, 471-472
+----------------------------------------------------------
+TOTAL                          650    112    83%
